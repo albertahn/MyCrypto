@@ -10,14 +10,13 @@ import {
   Account
 } from '@components';
 import { truncate, convertToFiat } from '@utils';
-import { ITxReceipt, ITxStatus, StoreAccount, Asset } from '@types';
+import { ITxReceipt, ITxStatus, StoreAccount, Asset, ITxType } from '@types';
 import {
   RatesContext,
   AddressBookContext,
   getLabelByAddressAndNetwork,
   SettingsContext
 } from '@services';
-import { translateRaw } from '@translations';
 import {
   getTxsFromAccount,
   txIsFailed,
@@ -39,13 +38,14 @@ import contractInteract from '@assets/images/transactions/contract-interact.svg'
 import contractDeploy from '@assets/images/transactions/contract-deploy.svg';
 import defizap from '@assets/images/transactions/defizap.svg';
 import membershipPurchase from '@assets/images/transactions/membership-purchase.svg';
+import swap from '@assets/images/transactions/swap.svg';
 
 interface Props {
   className?: string;
   accountsList: StoreAccount[];
 }
 
-enum ITxType {
+enum IStandardTxType {
   TRANSFER = 'TRANSFER',
   OUTBOUND = 'OUTBOUND',
   INBOUND = 'INBOUND'
@@ -56,26 +56,32 @@ interface ITxTypeConfigObj {
   label(asset: Asset): string;
 }
 
+const ITxHistoryType = { ...ITxType, ...IStandardTxType };
+type ITxHistoryType = Exclude<
+  Exclude<ITxType | IStandardTxType, ITxType.STANDARD>,
+  ITxType.UNKNOWN
+>;
+
 type ITxTypeConfig = {
-  [txType in ITxType]: ITxTypeConfigObj;
+  [key in ITxHistoryType]: ITxTypeConfigObj;
 };
 
 const TxTypeConfig: ITxTypeConfig = {
-  [ITxType.INBOUND]: {
+  [ITxHistoryType.INBOUND]: {
     label: (asset: Asset) =>
       translateRaw('RECENT_TX_LIST_LABEL_RECEIVED', {
         $ticker: asset.ticker || translateRaw('UNKNOWN')
       }),
     icon: inbound
   },
-  [ITxType.OUTBOUND]: {
+  [ITxHistoryType.OUTBOUND]: {
     label: (asset: Asset) =>
       translateRaw('RECENT_TX_LIST_LABEL_SENT', {
         $ticker: asset.ticker || translateRaw('UNKNOWN')
       }),
     icon: outbound
   },
-  [ITxType.TRANSFER]: {
+  [ITxHistoryType.TRANSFER]: {
     label: (asset: Asset) =>
       translateRaw('RECENT_TX_LIST_LABEL_TRANSFERRED', {
         $ticker: asset.ticker || translateRaw('UNKNOWN')
@@ -117,7 +123,7 @@ export const deriveTxType = (accountsList: StoreAccount[], tx: ITxReceipt) => {
     accountsList.find((account) => account.address.toLowerCase() === tx.from.toLowerCase());
   const toAccount =
     tx.to && accountsList.find((account) => account.address.toLowerCase() === tx.to.toLowerCase());
-  let txType = tx && tx.tx ? tx.txType : ITxHistoryType.STANDARD;
+  let txType = tx && tx.txType ? tx.txType : ITxHistoryType.STANDARD;
   txType = txType === ITxHistoryType.UNKNOWN ? ITxHistoryType.STANDARD : txType;
   if (txType === ITxHistoryType.STANDARD) {
     txType =
@@ -156,7 +162,7 @@ const SCombinedCircle = (asset: Asset) => {
   );
 };
 
-const makeTxIcon = (type: ITxType, asset: Asset) => {
+const makeTxIcon = (type: ITxHistoryType, asset: Asset) => {
   const greyscaleIcon = asset && <>{SCombinedCircle(asset)}</>;
   const baseIcon = (
     <div className="TransactionLabel-image">
@@ -191,8 +197,8 @@ export default function RecentTransactionList({ accountsList, className = '' }: 
         return [
           <TransactionLabel
             key={0}
-            image={makeTxIcon(txType, asset)}
-            label={TxTypeConfig[txType as ITxType].label(asset)}
+            image={makeTxIcon(txType as ITxHistoryType, asset)}
+            label={TxTypeConfig[txType as ITxHistoryType].label(asset)}
             stage={stage}
             date={timestamp}
           />,
