@@ -11,7 +11,7 @@ import DeFiZapLogo from './DeFiZapLogo';
 
 const CTAContent = styled.div`
   display: flex;
-  padding: 0px ${SPACING.BASE};
+  padding: 0 ${SPACING.BASE};
   flex-direction: column;
   padding-bottom: ${SPACING.BASE};
   @media (min-width: ${BREAK_POINTS.SCREEN_XS}) {
@@ -20,8 +20,6 @@ const CTAContent = styled.div`
 `;
 
 const DashboardZapCTA = ({ className }: any) => {
-  const zapConfig = ZAPS_CONFIG;
-
   return (
     <DashboardPanel
       heading={translateRaw('ZAP_DASHBOARD_PANEL_HEADER')}
@@ -29,7 +27,7 @@ const DashboardZapCTA = ({ className }: any) => {
       className={className}
     >
       <CTAContent>
-        {Object.values(zapConfig).map((zap) => (
+        {Object.values(ZAPS_CONFIG).map((zap) => (
           <ZapCard config={zap} key={`key-${zap.key}`} />
         ))}
       </CTAContent>

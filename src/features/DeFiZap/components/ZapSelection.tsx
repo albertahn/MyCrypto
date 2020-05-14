@@ -12,7 +12,8 @@ import { COLORS, BREAK_POINTS, SPACING } from '@theme';
 import { FullSizePanelSection, SpacedPanelSection } from '../../../components/FullSizeContentPanel';
 
 import { ZAPS_CONFIG, IZapId, defaultZapId, riskAndReward, accordionContent } from '../config';
-import { RiskAndRewardCard, DetailsList } from '.';
+import DetailsList from './DetailsList';
+import RiskAndRewardCard from './RiskAndRewardCard';
 
 const Illustration = styled.img`
   @media screen and (max-width: ${BREAK_POINTS.SCREEN_SM}) {
