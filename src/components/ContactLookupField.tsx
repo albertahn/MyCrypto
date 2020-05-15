@@ -3,7 +3,7 @@ import React, { useContext } from 'react';
 import { IReceiverAddress, Network } from '@types';
 import { AddressBookContext, findNextRecipientLabel } from '@services/Store';
 
-import GenericLookupField, { IGenericLookupFieldComponentProps } from './GenericLookupField';
+import GeneralLookupField, { IGeneralLookupFieldComponentProps } from './GeneralLookupField';
 
 interface IContactLookupFieldComponentProps {
   network: Network;
@@ -16,7 +16,8 @@ const ContactLookupField = ({
   name,
   value,
   ...rest
-}: IContactLookupFieldComponentProps & Omit<IGenericLookupFieldComponentProps, "options" | "handleEthAddress" | "handleENSName">) => {
+}: IContactLookupFieldComponentProps &
+  Omit<IGeneralLookupFieldComponentProps, 'options' | 'handleEthAddress' | 'handleENSName'>) => {
   const {
     addressBook: contacts,
     createAddressBooks: createContact,
@@ -40,7 +41,7 @@ const ContactLookupField = ({
     };
   };
 
-  const handleENSname = (resolvedAddress: string, inputString: string) => {
+  const handleENSName = (resolvedAddress: string, inputString: string) => {
     const contact = getContactByAddress(resolvedAddress);
     if (contact) return { display: contact.label, value: contact.address };
 
@@ -58,13 +59,13 @@ const ContactLookupField = ({
   };
 
   return (
-    <GenericLookupField
+    <GeneralLookupField
       name={name}
       value={value}
       network={network}
       options={contacts}
       handleEthAddress={handleEthAddress}
-      handleENSname={handleENSname}
+      handleENSName={handleENSName}
       onLoad={(form) => {
         if (value && value.value) {
           const contact = getContactByAddress(value.value);
