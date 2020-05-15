@@ -1,28 +1,22 @@
 import React, { useContext } from 'react';
 
-import { Network, IReceiverAddress, ErrorObject } from '@types';
-import {
-  AddressBookContext,
-  findNextRecipientLabel,
-} from '@services/Store';
+import { IReceiverAddress, Network } from '@types';
+import { AddressBookContext, findNextRecipientLabel } from '@services/Store';
 
-import GenericLookupField from './GenericLookupField';
+import GenericLookupField, { IGenericLookupFieldComponentProps } from './GenericLookupField';
 
 interface IContactLookupFieldComponentProps {
-  error?: string | ErrorObject;
   network: Network;
-  isResolvingName: boolean;
   name: string;
   value: IReceiverAddress;
-  onBlur?(): void;
-  setIsResolvingDomain(isResolving: boolean): void;
 }
 
 const ContactLookupField = ({
   network,
   name,
-  value
-}: IContactLookupFieldComponentProps) => {
+  value,
+  ...rest
+}: IContactLookupFieldComponentProps & Omit<IGenericLookupFieldComponentProps, "options" | "handleEthAddress" | "handleENSName">) => {
   const {
     addressBook: contacts,
     createAddressBooks: createContact,
@@ -71,17 +65,17 @@ const ContactLookupField = ({
       options={contacts}
       handleEthAddress={handleEthAddress}
       handleENSname={handleENSname}
+      onLoad={(form) => {
+        if (value && value.value) {
+          const contact = getContactByAddress(value.value);
+          if (contact && value.display !== contact.label) {
+            form.setFieldValue(name, { display: contact.label, value: contact.address }, true);
+          }
+        }
+      }}
+      {...rest}
     />
   );
-
-  /**useEffectOnce(() => {
-          if (value && value.value) {
-            const contact = getContactByAddress(value.value);
-            if (contact && value.display !== contact.label) {
-              form.setFieldValue(name, { display: contact.label, value: contact.address }, true);
-            }
-          }
-        });**/
 };
 
 export default ContactLookupField;
