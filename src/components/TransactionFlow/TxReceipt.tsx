@@ -38,7 +38,7 @@ import {
 import { ROUTE_PATHS } from '@config';
 import { SwapDisplayData } from '@features/SwapAssets/types';
 import translate, { translateRaw } from '@translations';
-import { convertToFiat, truncate, fromTxReceiptObj } from '@utils';
+import { convertToFiat, truncate } from '@utils';
 import { isWeb3Wallet } from '@utils/web3';
 import ProtocolTagsList from '@features/DeFiZap/components/ProtocolTagsList';
 import { ProtectTxUtils, ProtectTxContext } from '@features/ProtectTransaction';
@@ -46,6 +46,7 @@ import { ProtectTxAbort } from '@features/ProtectTransaction/components';
 import { MembershipReceiptBanner } from '@features/PurchaseMembership';
 import { DeFiZapLogo } from '@features/DeFiZap';
 import { getFiat } from '@config/fiats';
+import { updateFinishedPendingTxReceipt } from '@utils/transaction';
 
 import { ISender } from './types';
 import { constructSenderFromTxConfig } from './helpers';
@@ -78,21 +79,18 @@ export default function TxReceipt({
   resetFlow,
   completeButtonText,
   pendingButton,
-  txType = ITxType.STANDARD,
   membershipSelected,
   zapSelected,
   swapDisplay,
   protectTxButton
-}: IStepComponentProps & Props) {
+}: ITransactionReceiptStepProps & Props) {
   const { getAssetRate } = useContext(RatesContext);
   const { getContactByAddressAndNetworkId } = useContext(AddressBookContext);
   const { addNewTransactionToAccount } = useContext(AccountContext);
   const { accounts } = useContext(StoreContext);
-  const { assets } = useContext(AssetContext);
-  const { networks } = useContext(NetworkContext);
   const { settings } = useContext(SettingsContext);
   const [txStatus, setTxStatus] = useState(ITxStatus.PENDING);
-  const [displayTxReceipt, setDisplayTxReceipt] = useState<ITxReceipt | undefined>(txReceipt);
+  const [displayTxReceipt, setDisplayTxReceipt] = useState<ITxReceipt>(txReceipt);
   const [blockNumber, setBlockNumber] = useState(0);
   const [timestamp, setTimestamp] = useState(0);
 
@@ -105,7 +103,7 @@ export default function TxReceipt({
 
   useEffect(() => {
     if (displayTxReceipt && blockNumber === 0 && displayTxReceipt.hash) {
-      const provider = new ProviderHandler(displayTxReceipt.network || txConfig.network);
+      const provider = new ProviderHandler(txConfig.network);
       const blockNumInterval = setInterval(() => {
         getTransactionReceiptFromHash(displayTxReceipt.hash, provider).then(
           (transactionOutcome) => {
@@ -114,11 +112,11 @@ export default function TxReceipt({
                 transactionOutcome.status === 1 ? ITxStatus.SUCCESS : ITxStatus.FAILED;
               setTxStatus((prevStatusState) => transactionStatus || prevStatusState);
               setBlockNumber((prevState: number) => transactionOutcome.blockNumber || prevState);
-              provider.getTransactionByHash(displayTxReceipt.hash).then((transactionReceipt) => {
-                const receipt = fromTxReceiptObj(transactionReceipt)(
-                  assets,
-                  networks
-                ) as ITxReceipt;
+              provider.getTransactionByHash(displayTxReceipt.hash).then((txResponse) => {
+                const receipt = updateFinishedPendingTxReceipt(txResponse)(
+                  txReceipt,
+                  transactionStatus
+                );
                 setDisplayTxReceipt(receipt);
               });
             }
@@ -130,15 +128,14 @@ export default function TxReceipt({
   });
   useEffect(() => {
     if (displayTxReceipt && timestamp === 0 && blockNumber !== 0) {
-      const provider = new ProviderHandler(displayTxReceipt.network || txConfig.network);
+      const provider = new ProviderHandler(txConfig.network);
       const timestampInterval = setInterval(() => {
         getTimestampFromBlockNum(blockNumber, provider).then((transactionTimestamp) => {
           if (sender.account) {
             addNewTransactionToAccount(sender.account, {
               ...displayTxReceipt,
               timestamp: transactionTimestamp || 0,
-              stage: txStatus,
-              txType
+              stage: txStatus
             });
           }
           setTimestamp(transactionTimestamp || 0);
@@ -173,7 +170,6 @@ export default function TxReceipt({
       settings={settings}
       txConfig={txConfig}
       txReceipt={txReceipt}
-      txType={txType}
       assetRate={assetRate}
       zapSelected={zapSelected}
       membershipSelected={membershipSelected}
@@ -369,11 +365,11 @@ export const TxReceiptUI = ({
             {translate('TRANSACTION_ID')}:
           </div>
           <div className="TransactionReceipt-details-row-column">
-            {displayTxReceipt && displayTxReceipt.network && (
+            {displayTxReceipt && txConfig.network && txConfig.network.blockExplorer && (
               <LinkOut
                 text={displayTxReceipt.hash}
                 truncate={truncate}
-                link={displayTxReceipt.network.blockExplorer.txUrl(displayTxReceipt.hash)}
+                link={txConfig.network.blockExplorer.txUrl(displayTxReceipt.hash)}
               />
             )}
             {!displayTxReceipt && <PendingTransaction />}
