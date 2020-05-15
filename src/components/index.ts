@@ -48,7 +48,6 @@ export { default as CodeBlock } from './CodeBlock';
 export { WalletList } from './WalletList';
 export * from './WalletUnlock';
 export * from './TransactionFlow';
-export { default as TabsNav } from './TabsNav';
 export { default as CollapsibleTable } from './CollapsibleTable';
 export { TableRow, TableCell } from './Table';
 export { default as Network } from './Network';
@@ -76,4 +75,3 @@ export {
   RowPanelSection
 } from './FullSizeContentPanel';
 export { default as UndoDeleteOverlay } from './UndoDeleteOverlay';
-export { default as MobileNavBar } from './MobileNavBar';
