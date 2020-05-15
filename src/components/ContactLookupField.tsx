@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { FieldProps, Field } from 'formik';
-import { ResolutionError } from '@unstoppabledomains/resolution';
+import { ResolutionError } from '@unstoppabledomains/resolution/build/resolutionError';
 
 import { DomainStatus, InlineMessage } from '@components';
 import { Network, IReceiverAddress, ErrorObject } from '@types';
