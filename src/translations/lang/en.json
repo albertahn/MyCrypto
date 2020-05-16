@@ -971,6 +971,7 @@
 		"ZAP_SETH_UNIPOOL_NAME": "sETH Unipool",
 		"ZAP_SETH_UNIPOOL_TITLE": "Everyday ETH Investment",
 		"ZAP_START_EARNING": "Start Earning Now!",
-		"ZAP_UNISWAP_TOOLTIP": "This zap stores funds in the Uniswap exchange protocol"
+		"ZAP_UNISWAP_TOOLTIP": "This zap stores funds in the Uniswap exchange protocol",
+		"POWERED_BY": "Powered by"
 	}
 }
