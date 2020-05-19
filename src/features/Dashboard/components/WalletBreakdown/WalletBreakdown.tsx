@@ -3,7 +3,7 @@ import { Panel } from '@mycrypto/ui';
 import styled from 'styled-components';
 
 import { translateRaw } from '@translations';
-import { AnalyticsService, ANALYTICS_CATEGORIES, RatesContext } from '@services';
+import { ANALYTICS_CATEGORIES, RatesContext } from '@services';
 import { SettingsContext, StoreContext } from '@services/Store';
 import { StoreAsset, TUuid } from '@types';
 import { weiToFloat, convertToFiatFromAsset } from '@utils';
@@ -16,6 +16,7 @@ import AccountDropdown from './AccountDropdown';
 import BalancesDetailView from './BalancesDetailView';
 import WalletBreakdownView from './WalletBreakdownView';
 import NoAccountsSelected from './NoAccountsSelected';
+import useAnalytics from '@utils/useAnalytics';
 
 const WalletBreakdownTop = styled.div`
   display: flex;
@@ -64,14 +65,19 @@ export function WalletBreakdown() {
   const { accounts, totals, currentAccounts } = useContext(StoreContext);
   const { settings, updateSettingsAccounts } = useContext(SettingsContext);
   const { getAssetRate } = useContext(RatesContext);
+  useAnalytics({
+    category: ANALYTICS_CATEGORIES.WALLET_BREAKDOWN,
+    actionName: 'User has accounts',
+    eventParams: {
+      numOfAccounts: accounts.length
+    },
+    triggerOnMount: true,
+    shouldTrack: () => !wasNumOfAccountsTracked
+  });
 
-  // Track number of accounts that user has only once per session
   useEffect(() => {
     if (!wasNumOfAccountsTracked) {
       wasNumOfAccountsTracked = true;
-      AnalyticsService.instance.track(ANALYTICS_CATEGORIES.WALLET_BREAKDOWN, `User has accounts`, {
-        numOfAccounts: accounts.length
-      });
     }
   }, []);
 
