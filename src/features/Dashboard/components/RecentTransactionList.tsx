@@ -209,7 +209,7 @@ export default function RecentTransactionList({ accountsList, className = '' }: 
     const fromAddressBookEntry = getLabelByAddressAndNetwork(tx.from, addressBook, network);
     return {
       ...tx,
-      timestamp: 'timestamp' in tx ? tx.timestamp : 0,
+      timestamp: tx.timestamp || 0,
       txType: deriveTxType(accountsList, tx) || ITxHistoryType.UNKNOWN,
       toLabel: toAddressBookEntry ? toAddressBookEntry.label : noLabel,
       fromLabel: fromAddressBookEntry ? fromAddressBookEntry.label : noLabel,
@@ -227,7 +227,7 @@ export default function RecentTransactionList({ accountsList, className = '' }: 
       ({
         timestamp,
         hash,
-        stage,
+        status,
         from,
         to,
         amount,
@@ -242,7 +242,7 @@ export default function RecentTransactionList({ accountsList, className = '' }: 
             key={0}
             image={makeTxIcon(txType, asset)}
             label={TxTypeConfig[txType].label(asset)}
-            stage={stage}
+            stage={status}
             date={timestamp}
           />,
           <Account key={1} title={fromLabel} truncate={truncate} address={from} />,

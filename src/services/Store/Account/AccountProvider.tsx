@@ -58,12 +58,12 @@ export const AccountProvider: React.FC = ({ children }) => {
     updateAccount: (uuid, a) => model.update(uuid, a),
     addNewTransactionToAccount: (accountData, newTransaction) => {
       if (
-        'stage' in newTransaction &&
-        [ITxStatus.SUCCESS, ITxStatus.FAILED].includes(newTransaction.stage)
+        'status' in newTransaction &&
+        [ITxStatus.SUCCESS, ITxStatus.FAILED].includes(newTransaction.status)
       ) {
         AnalyticsService.instance.track(ANALYTICS_CATEGORIES.TX_HISTORY, `Tx Made`, {
           txType: (newTransaction && newTransaction.txType) || ITxType.UNKNOWN,
-          txStatus: newTransaction.stage
+          txStatus: newTransaction.status
         });
       }
       const newAccountData = {

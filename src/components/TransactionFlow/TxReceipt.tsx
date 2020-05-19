@@ -18,7 +18,10 @@ import {
   ITxType,
   TAddress,
   ExtendedAddressBook,
-  ISettings
+  ISettings,
+  ITransactionReceiptStepProps,
+  IPendingTxReceipt,
+  ITxHistoryStatus
 } from '@types';
 import { Amount, TimeElapsedCounter, AssetIcon, LinkOut } from '@components';
 import {
@@ -89,7 +92,7 @@ export default function TxReceipt({
   const { addNewTransactionToAccount } = useContext(AccountContext);
   const { accounts } = useContext(StoreContext);
   const { settings } = useContext(SettingsContext);
-  const [txStatus, setTxStatus] = useState(ITxStatus.PENDING);
+  const [txStatus, setTxStatus] = useState(ITxStatus.PENDING as ITxHistoryStatus);
   const [displayTxReceipt, setDisplayTxReceipt] = useState<ITxReceipt>(txReceipt);
   const [blockNumber, setBlockNumber] = useState(0);
   const [timestamp, setTimestamp] = useState(0);
@@ -108,13 +111,13 @@ export default function TxReceipt({
         getTransactionReceiptFromHash(displayTxReceipt.hash, provider).then(
           (transactionOutcome) => {
             if (transactionOutcome) {
-              const transactionStatus =
+              const transactionStatus: ITxHistoryStatus =
                 transactionOutcome.status === 1 ? ITxStatus.SUCCESS : ITxStatus.FAILED;
               setTxStatus((prevStatusState) => transactionStatus || prevStatusState);
               setBlockNumber((prevState: number) => transactionOutcome.blockNumber || prevState);
               provider.getTransactionByHash(displayTxReceipt.hash).then((txResponse) => {
                 const receipt = updateFinishedPendingTxReceipt(txResponse)(
-                  txReceipt,
+                  txReceipt as IPendingTxReceipt,
                   transactionStatus
                 );
                 setDisplayTxReceipt(receipt);
@@ -134,8 +137,9 @@ export default function TxReceipt({
           if (sender.account) {
             addNewTransactionToAccount(sender.account, {
               ...displayTxReceipt,
+              blockNumber: blockNumber || 0,
               timestamp: transactionTimestamp || 0,
-              stage: txStatus
+              status: txStatus
             });
           }
           setTimestamp(transactionTimestamp || 0);
